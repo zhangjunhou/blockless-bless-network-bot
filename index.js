@@ -817,8 +817,9 @@ async function processNode(node, agent, ipAddress, authToken) {
 async function runAll(initialRun = true) {
     try {
         if (initialRun) {
-            await displayHeader();
-            useProxy = await promptUseProxy();
+            // await displayHeader();
+            // useProxy = await promptUseProxy();
+            useProxy = true;
         }
 
         const fetch = await loadFetch();
