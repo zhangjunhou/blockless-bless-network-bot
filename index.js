@@ -640,16 +640,16 @@ async function saveHardwareInfo(hardwareInfo) {
     await fs.writeFile(hardwareInfoFile, JSON.stringify(hardwareInfo, null, 2));
 }
 
-async function registerNode(nodeId, hardwareId, ipAddress, agent, authToken) {
+async function registerNode(nodeId, hardwareId,hardwareInfo, ipAddress, agent, authToken) {
     const fetch = await loadFetch();
     const registerUrl = `${apiBaseUrl}/nodes/${nodeId}`;
     console.log(`[${new Date().toISOString()}] Registering node with IP: ${ipAddress}, Hardware ID: ${hardwareId}`);
 
-    let hardwareInfo = await loadHardwareInfo();
-    if (!hardwareInfo[nodeId]) {
-        hardwareInfo[nodeId] = generateRandomHardwareInfo();
-        await saveHardwareInfo(hardwareInfo);
-    }
+    // let hardwareInfo = await loadHardwareInfo();
+    // if (!hardwareInfo[nodeId]) {
+    //     hardwareInfo[nodeId] = generateRandomHardwareInfo();
+    //     await saveHardwareInfo(hardwareInfo);
+    // }
 
     const response = await fetch(registerUrl, {
         method: "POST",
@@ -661,7 +661,7 @@ async function registerNode(nodeId, hardwareId, ipAddress, agent, authToken) {
         body: JSON.stringify({
             ipAddress,
             hardwareId,
-            hardwareInfo: hardwareInfo[nodeId],
+            hardwareInfo: hardwareInfo,
             extensionVersion: "0.1.7"
         }),
         agent
@@ -767,7 +767,7 @@ async function processNode(node, agent, ipAddress, authToken) {
             activeNodes.add(node.nodeId);
             console.log(`[${new Date().toISOString()}] Processing nodeId: ${node.nodeId}, hardwareId: ${node.hardwareId}, IP: ${ipAddress}`);
 
-            const registrationResponse = await registerNode(node.nodeId, node.hardwareId, ipAddress, agent, authToken);
+            const registrationResponse = await registerNode(node.nodeId, node.hardwareId,node.hardwareInfo, ipAddress, agent, authToken);
             console.log(`[${new Date().toISOString()}] Node registration completed for nodeId: ${node.nodeId}. Response:`, registrationResponse);
 
             const startSessionResponse = await startSession(node.nodeId, agent, authToken);
@@ -824,17 +824,17 @@ async function runAll(initialRun = true) {
         const fetch = await loadFetch();
         const publicIpAddress = useProxy ? null : await fetchIpAddress(fetch);
 
-        let hardwareInfo = await loadHardwareInfo();
+        // let hardwareInfo = await loadHardwareInfo();
 
-        config.forEach(user => {
-            user.nodes.forEach(node => {
-                if (!hardwareInfo[node.nodeId]) {
-                    hardwareInfo[node.nodeId] = generateRandomHardwareInfo();
-                }
-            });
-        });
+        // config.forEach(user => {
+        //     user.nodes.forEach(node => {
+        //         if (!hardwareInfo[node.nodeId]) {
+        //             hardwareInfo[node.nodeId] = generateRandomHardwareInfo();
+        //         }
+        //     });
+        // });
 
-        await saveHardwareInfo(hardwareInfo);
+        // await saveHardwareInfo(hardwareInfo);
 
         const nodePromises = config.flatMap(user =>
             user.nodes.map(async node => {
